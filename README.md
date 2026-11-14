@@ -1,26 +1,26 @@
 # Hakchi Me
 
-A lightweight, native Objective-C / AppKit application intended to bring Hakchi2 CE-style Classic Mini management to macOS.
+A lightweight, native Objective-C / AppKit application intended to bring Hakchi2 CE-style Classic Mini management to older Intel Macs.
 
-## Compatibility
+## Primary compatibility target
 
-- Intel Macs: macOS 10.13 or later.
-- Apple Silicon: macOS 11.0 or later.
-- Builds a universal x86_64 + arm64 app by default.
-- Uses AppKit, IOKit, CoreFoundation, QuartzCore and CommonCrypto.
+- **Intel Macs running OS X 10.11 El Capitan or later.**
+- Specifically developed around a 64-bit Intel Mac such as the 2008 iMac.
+- Builds an x86_64-only app; no Apple Silicon slice or newer-only frameworks.
+- Uses AppKit, IOKit and CoreFoundation.
 - No SwiftUI, Electron, virtualization, Windows runtime, or mandatory kernel extension.
 
-The original 10.7 target has been raised because the current supported Xcode/macOS build environment cannot reliably validate a 10.7 deployment. Supporting older 10.x releases would require a separate legacy toolchain and SDK validation.
+The application is compiled against the OS X 10.11 SDK with a 10.11 deployment target. GitHub Actions downloads the SDK archive, verifies its SHA-256 checksum, and builds the Intel app. The SDK package is sourced from the public macOS SDK collection; review its licensing and provenance before redistributing SDK contents. The SDK is used only in CI and is not bundled into the app.
 
 ## Current prototype
 
 - Native graphical window with Dashboard, Games, Backups and Kernel sections.
-- Imports local NES/FDS/UNIF game files into the app's library folder.
+- Imports local NES/FDS/UNIF game files into the app's own library folder.
 - Lists imported games and supports removing library copies.
 - Creates timestamped backup copies with SHA-256 manifests.
 - Detects the common Allwinner FEL USB identity (VID 1f3a / PID efe8) using IOKit.
 - Includes technical research notes for the FEL, post-boot transport, kernel workflow and external storage architecture.
-- GitHub Actions builds the universal app and packages a DMG on macOS.
+- GitHub Actions builds an Intel app targeted at OS X 10.11 and packages a DMG.
 
 ## Kernel and USB status
 
@@ -37,39 +37,28 @@ The app is intended to use the official Hakchi2 CE-compatible kernel/payload wor
 
 See [docs/RESEARCH.md](docs/RESEARCH.md) for source notes and implementation gates.
 
-## Build locally
+## Build locally on El Capitan
 
-Requires a Mac with Xcode Command Line Tools:
+Requires Xcode 7.3 / Command Line Tools or another compiler and SDK combination that supports OS X 10.11:
 
 ```sh
 make
 open "build/Hakchi Me.app"
 ```
 
-Build only for Intel:
-
-```sh
-make clean
-make ARCHS=x86_64
-```
-
-Build only for Apple Silicon:
-
-```sh
-make clean
-make ARCHS=arm64
-```
+The default build is Intel x86_64 with a 10.11 deployment target. On an older Mac, use the SDK installed with Xcode rather than downloading a newer SDK.
 
 ## GitHub Actions
 
 Every push to `main`, pull request, or manual workflow run triggers:
 
-1. Universal app compilation on a macOS runner.
-2. Bundle and architecture validation.
-3. DMG creation.
-4. Upload of the app, DMG and SHA-256 checksum as a workflow artifact.
+1. Downloads the OS X 10.11 SDK archive and verifies its SHA-256.
+2. Compiles the Intel x86_64 app against that SDK with a 10.11 minimum.
+3. Validates the executable architecture and bundle minimum version.
+4. Creates a DMG and SHA-256 checksum.
+5. Uploads the app and DMG as workflow artifacts.
 
-The CI artifact is not Developer ID signed or notarized. Those release steps require the project owner's Apple Developer signing credentials and notarization secrets.
+CI compilation and bundle checks do not replace a launch test on a physical El Capitan Mac. The CI artifact is not Developer ID signed or notarized.
 
 ## Project layout
 
@@ -77,7 +66,7 @@ The CI artifact is not Developer ID signed or notarized. Those release steps req
 - `Sources/AppDelegate.*` — native UI and user workflows
 - `Sources/DeviceDetector.*` — read-only FEL USB identity detection
 - `Sources/GameLibrary.*` — local game-library and backup utilities
-- `.github/workflows/build-macos.yml` — macOS build and DMG workflow
+- `.github/workflows/build-macos.yml` — El Capitan SDK build and DMG workflow
 - `docs/RESEARCH.md` — researched protocol and product architecture
 
 ## License
