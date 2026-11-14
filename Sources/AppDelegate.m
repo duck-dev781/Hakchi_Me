@@ -1,6 +1,7 @@
 #import "AppDelegate.h"
 #import "DeviceDetector.h"
 #import "GameLibrary.h"
+#import <QuartzCore/QuartzCore.h>
 
 @interface AppDelegate ()
 @property (nonatomic, strong) NSWindow *window;
