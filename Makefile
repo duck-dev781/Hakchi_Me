@@ -6,27 +6,16 @@ CFLAGS=-fobjc-arc -Wall -Wextra -ISources
 FRAMEWORKS=-framework Cocoa -framework IOKit -framework CoreFoundation
 PLIST=Resources/Info.plist
 
-# Intel supports the 10.13 deployment target; Apple Silicon requires macOS 11 or newer.
-ARCHS ?= x86_64 arm64
-MIN_X86_64 ?= 10.13
-MIN_ARM64 ?= 11.0
+# Hakchi Me's primary target is the 64-bit Intel iMac running OS X 10.11.
+ARCHS ?= x86_64
+MIN_X86_64 ?= 10.11
+SDKROOT ?=
+SYSROOT_FLAG = $(if $(SDKROOT),-isysroot "$(SDKROOT)",)
 
 .PHONY: all clean
 all:
 	mkdir -p "$(BUNDLE)/Contents/MacOS" "$(BUNDLE)/Contents/Resources" build/arch
-	set -e; \
-	bins=""; \
-	for arch in $(ARCHS); do \
-		case "$$arch" in \
-			x86_64) minimum="$(MIN_X86_64)" ;; \
-			arm64) minimum="$(MIN_ARM64)" ;; \
-			*) echo "Unsupported architecture: $$arch"; exit 2 ;; \
-		esac; \
-		output="build/arch/HakchiMe-$$arch"; \
-		$(CC) $(CFLAGS) -arch "$$arch" -mmacosx-version-min="$$minimum" $(SOURCES) $(FRAMEWORKS) -o "$$output"; \
-		bins="$$bins $$output"; \
-	done; \
-	lipo -create $$bins -output "$(BUNDLE)/Contents/MacOS/$(APP_NAME)"
+	$(CC) $(CFLAGS) -arch x86_64 -mmacosx-version-min=$(MIN_X86_64) $(SYSROOT_FLAG) $(SOURCES) $(FRAMEWORKS) -o "$(BUNDLE)/Contents/MacOS/$(APP_NAME)"
 	cp $(PLIST) "$(BUNDLE)/Contents/Info.plist"
 
 clean:
