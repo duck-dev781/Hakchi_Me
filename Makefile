@@ -3,7 +3,7 @@ BUNDLE=build/$(APP_NAME).app
 SOURCES=Sources/main.m Sources/AppDelegate.m Sources/DeviceDetector.m Sources/GameLibrary.m
 CC=clang
 CFLAGS=-fobjc-arc -Wall -Wextra -ISources
-FRAMEWORKS=-framework Cocoa -framework IOKit -framework CoreFoundation -framework QuartzCore
+FRAMEWORKS=-framework Cocoa -framework IOKit -framework CoreFoundation
 PLIST=Resources/Info.plist
 
 # Intel supports the 10.13 deployment target; Apple Silicon requires macOS 11 or newer.
@@ -12,9 +12,7 @@ MIN_X86_64 ?= 10.13
 MIN_ARM64 ?= 11.0
 
 .PHONY: all clean
-all: $(BUNDLE)/Contents/MacOS/$(APP_NAME)
-
-$(BUNDLE)/Contents/MacOS/$(APP_NAME): $(SOURCES) $(PLIST)
+all:
 	mkdir -p "$(BUNDLE)/Contents/MacOS" "$(BUNDLE)/Contents/Resources" build/arch
 	set -e; \
 	bins=""; \
@@ -28,7 +26,7 @@ $(BUNDLE)/Contents/MacOS/$(APP_NAME): $(SOURCES) $(PLIST)
 		$(CC) $(CFLAGS) -arch "$$arch" -mmacosx-version-min="$$minimum" $(SOURCES) $(FRAMEWORKS) -o "$$output"; \
 		bins="$$bins $$output"; \
 	done; \
-	lipo -create $$bins -output "$@"
+	lipo -create $$bins -output "$(BUNDLE)/Contents/MacOS/$(APP_NAME)"
 	cp $(PLIST) "$(BUNDLE)/Contents/Info.plist"
 
 clean:
