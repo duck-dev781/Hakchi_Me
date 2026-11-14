@@ -1,6 +1,15 @@
-# Prototype test plan
+# Test plan
 
-This is a manual/static test plan for the first prototype. It has not been run on macOS hardware in this development environment.
+## Automated GitHub Actions checks
+
+The `Build Hakchi Me for macOS` workflow:
+1. Compiles x86_64 and arm64 slices on a macOS runner.
+2. Creates a universal executable with `lipo`.
+3. Validates the app's Info.plist.
+4. Confirms the executable exists and is executable.
+5. Packages the app into a DMG and publishes the app, DMG and SHA-256 checksum as artifacts.
+
+These checks validate compilation and packaging, not actual console compatibility.
 
 ## Local-only paths
 
@@ -20,12 +29,15 @@ This is a manual/static test plan for the first prototype. It has not been run o
 
 ## Not covered yet
 
-- No FEL commands are sent.
+- No FEL protocol commands are sent.
+- No board ID verification is implemented.
 - No kernel or bootloader is read or written.
 - No payload is uploaded or executed.
+- No post-boot USB network/SSH transport is implemented.
+- No storage partition is resized or modified.
 - No game synchronization to a console is performed.
-- No compatibility test has been performed against NES Classic hardware.
+- No NES Classic hardware test has been completed.
 
-## Build verification
+## Compatibility
 
-Run `make` on a Mac with Xcode command-line tools. This source has received a code-path review, but it has not been compiled in this environment because the current environment is not macOS and does not contain Apple's AppKit/IOKit SDKs.
+The CI build targets Intel macOS 10.13+ and Apple Silicon macOS 11.0+. Older 10.x compatibility is not currently verified.
