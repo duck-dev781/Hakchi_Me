@@ -4,7 +4,7 @@ SOURCES=Sources/main.m Sources/AppDelegate.m Sources/DeviceDetector.m Sources/Ga
 SDKROOT?=$(shell xcrun --sdk macosx --show-sdk-path 2>/dev/null)
 CC=clang
 CFLAGS=-fobjc-arc -Wall -Wextra -mmacosx-version-min=10.7 -ISources
-FRAMEWORKS=-framework Cocoa -framework IOKit -framework CoreFoundation
+FRAMEWORKS=-framework Cocoa -framework IOKit -framework CoreFoundation -framework QuartzCore
 PLIST=Resources/Info.plist
 
 .PHONY: all clean
