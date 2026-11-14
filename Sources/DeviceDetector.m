@@ -23,9 +23,11 @@
     if (result != KERN_SUCCESS) return NO;
 
     io_service_t service = IO_OBJECT_NULL;
-    BOOL found = IOIteratorNext(iterator) != IO_OBJECT_NULL;
-    // Drain/release any remaining iterator entries.
-    while ((service = IOIteratorNext(iterator)) != IO_OBJECT_NULL) IOObjectRelease(service);
+    BOOL found = NO;
+    while ((service = IOIteratorNext(iterator)) != IO_OBJECT_NULL) {
+        found = YES;
+        IOObjectRelease(service);
+    }
     IOObjectRelease(iterator);
     return found;
 }
