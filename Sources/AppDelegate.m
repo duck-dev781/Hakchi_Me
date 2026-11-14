@@ -5,7 +5,6 @@
 @interface AppDelegate ()
 @property (nonatomic, strong) NSWindow *window;
 @property (nonatomic, strong) NSView *contentView;
-@property (nonatomic, strong) NSTextField *statusLabel;
 @property (nonatomic, strong) NSTableView *gamesTable;
 @property (nonatomic, strong) NSArray *games;
 @end
@@ -41,7 +40,6 @@
     [label setSelectable:YES];
     [label setBordered:NO];
     [label setDrawsBackground:NO];
-    [[label font] set];
     [label setFont:[NSFont systemFontOfSize:size]];
     return label;
 }
@@ -91,7 +89,7 @@
     [self clearContent];
     [self addTitle:@"Welcome to Hakchi Me" subtitle:@"A native Mac frontend for your Classic Mini library."];
     NSTextField *device = [self label:[DeviceDetector statusDescription] frame:NSMakeRect(10, 420, 650, 48) size:13];
-    [device setTextColor:[NSColor secondaryLabelColor]];
+    [device setTextColor:[NSColor colorWithCalibratedWhite:0.35 alpha:1.0]];
     [self.contentView addSubview:device];
     [self.contentView addSubview:[self label:@"Quick start" frame:NSMakeRect(10, 350, 200, 25) size:17]];
     [self.contentView addSubview:[self label:@"1. Add your own game files in Games.\n2. Keep an original kernel backup before any device changes.\n3. Connect the Classic with a data-capable USB cable to check FEL detection." frame:NSMakeRect(10, 275, 640, 65) size:13]];
