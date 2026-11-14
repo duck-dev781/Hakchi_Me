@@ -1,4 +1,4 @@
-name: Build Hakchi Me for macOS
+name: Build Hakchi Me for OS X El Capitan
 
 on:
   push:
@@ -11,29 +11,45 @@ permissions:
 
 jobs:
   build:
-    name: Build universal macOS app and DMG
+    name: Build Intel app for OS X 10.11
     runs-on: macos-15-intel
     steps:
       - name: Check out source
         uses: actions/checkout@v4
 
-      - name: Show toolchain
+      - name: Install OS X 10.11 SDK
+        env:
+          SDK_URL: https://github.com/joseluisq/macosx-sdks/releases/download/10.11/MacOSX10.11.sdk.tar.xz
+          SDK_SHA256: 994b7a737a9f5e797af62463e1d540fca99e33b4c1448ad11ba1548424d26807
+        run: |
+          set -euo pipefail
+          curl --fail --location --retry 3 "$SDK_URL" -o "$RUNNER_TEMP/MacOSX10.11.sdk.tar.xz"
+          echo "$SDK_SHA256  $RUNNER_TEMP/MacOSX10.11.sdk.tar.xz" | shasum -a 256 -c -
+          mkdir -p "$RUNNER_TEMP/elcapitan-sdk"
+          tar -xf "$RUNNER_TEMP/MacOSX10.11.sdk.tar.xz" -C "$RUNNER_TEMP/elcapitan-sdk"
+          SDK_PATH="$RUNNER_TEMP/elcapitan-sdk/MacOSX10.11.sdk"
+          test -d "$SDK_PATH"
+          echo "HAKCHI_SDKROOT=$SDK_PATH" >> "$GITHUB_ENV"
+
+      - name: Show build toolchain
         run: |
           xcodebuild -version
           clang --version
-          xcrun --sdk macosx --show-sdk-version
+          echo "Using SDK: $HAKCHI_SDKROOT"
 
-      - name: Build app
+      - name: Build app for Intel El Capitan
         run: |
           make clean
-          make all
+          make ARCHS=x86_64 MIN_X86_64=10.11 SDKROOT="$HAKCHI_SDKROOT"
 
-      - name: Validate bundle
+      - name: Validate El Capitan app bundle
         run: |
           plutil -lint "build/Hakchi Me.app/Contents/Info.plist"
           test -x "build/Hakchi Me.app/Contents/MacOS/Hakchi Me"
           file "build/Hakchi Me.app/Contents/MacOS/Hakchi Me"
-          lipo -info "build/Hakchi Me.app/Contents/MacOS/Hakchi Me"
+          lipo -verify_arch x86_64 "build/Hakchi Me.app/Contents/MacOS/Hakchi Me"
+          otool -l "build/Hakchi Me.app/Contents/MacOS/Hakchi Me" | grep -A5 -E 'LC_VERSION_MIN_MACOSX|LC_BUILD_VERSION'
+          /usr/libexec/PlistBuddy -c 'Print :LSMinimumSystemVersion' "build/Hakchi Me.app/Contents/Info.plist" | grep '^10.11$'
 
       - name: Create DMG
         run: |
@@ -45,16 +61,16 @@ jobs:
             -srcfolder build/dmg \
             -ov \
             -format UDZO \
-            "build/Hakchi-Me-macOS.dmg"
-          shasum -a 256 "build/Hakchi-Me-macOS.dmg" > "build/Hakchi-Me-macOS.dmg.sha256"
+            "build/Hakchi-Me-OSX-10.11-Intel.dmg"
+          shasum -a 256 "build/Hakchi-Me-OSX-10.11-Intel.dmg" > "build/Hakchi-Me-OSX-10.11-Intel.dmg.sha256"
 
       - name: Upload app and DMG
         uses: actions/upload-artifact@v4
         with:
-          name: Hakchi-Me-macOS-${{ github.sha }}
+          name: Hakchi-Me-OSX-10.11-Intel-${{ github.sha }}
           path: |
             build/Hakchi Me.app
-            build/Hakchi-Me-macOS.dmg
-            build/Hakchi-Me-macOS.dmg.sha256
+            build/Hakchi-Me-OSX-10.11-Intel.dmg
+            build/Hakchi-Me-OSX-10.11-Intel.dmg.sha256
           if-no-files-found: error
           retention-days: 14
